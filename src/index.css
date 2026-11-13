@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --color-deep-sea-blue: #253d5b;
+  --color-amethyst: #a755c2;
+  --color-mint-cream: #effffa;
+  --color-cotton-candy: #e5989b;
+  --color-night-bordeaux: #66101f;
+}
+
 :root {
   font-family: Inter, system-ui, sans-serif;
   font-synthesis: none;
