@@ -1,11 +1,16 @@
 @import "tailwindcss";
 
 @theme {
+  /* Main Colors */
   --color-deep-sea-blue: #253d5b;
   --color-amethyst: #a755c2;
   --color-mint-cream: #effffa;
   --color-cotton-candy: #e5989b;
   --color-night-bordeaux: #66101f;
+
+  /* Font Families */
+  --font-inter: "Inter Variable", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
 }
 
 :root {
@@ -27,4 +32,5 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: var(--font-inter);
 }
