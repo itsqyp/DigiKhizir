@@ -1,0 +1,5 @@
+DeepSeaBlue = 253d5b
+Ameythst = a755c2
+Mint Cream = effffa
+Cotton Candy = e5989b
+Night Borduex = 66101f
