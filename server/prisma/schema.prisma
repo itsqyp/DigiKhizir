@@ -53,6 +53,15 @@ enum AnimalType {
   OTHER
 }
 
+enum EmergencyType {
+  MEDICAL
+  RESCUE
+  FLOOD_TRAPPED
+  FOOD_WATER
+  ANIMAL_RESCUE
+  OTHER
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
