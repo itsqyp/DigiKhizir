@@ -45,6 +45,7 @@ enum ReliefCategory {
   CLOTHING
   OTHER
 }
+
 enum AnimalType {
   PET
   LIVESTOCK
@@ -202,4 +203,50 @@ model Content {
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
+}
+
+
+model AnimalShelter {
+  id           String   @id @default(uuid())
+  name         String
+  nameBn       String?
+  address      String
+  districtId   String
+  latitude     Float
+  longitude    Float
+
+  // Maximum number of animals the location can accommodate
+  capacity     Int
+
+  // Current number of animals at the location
+  occupancy   Int?
+
+  // Types of animals accepted at this location
+  animalTypes  AnimalType[]
+
+  contactName  String?
+  contactPhone String?
+
+  isActive     Boolean  @default(true)
+
+  facilities   AnimalShelterFacility[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AnimalShelterFacility {
+  id             String        @id @default(uuid())
+  name           String
+  nameBn         String?
+  available      Boolean       @default(true)
+
+  animalShelterId String
+  animalShelter  AnimalShelter @relation(
+    fields: [animalShelterId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  createdAt      DateTime      @default(now())
 }
