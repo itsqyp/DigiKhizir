@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import DisasterAlerts from "../../components/resident/alerts/DisasterAlerts";
 import {
   MapPin,
   Navigation,
@@ -269,6 +270,15 @@ export default function ResidentHomePage() {
                 } selected.`}
           </p>
         </section>
+
+        {selectedFeatures.includes("alerts") &&
+          (districtId ? (
+            <DisasterAlerts key={districtId} districtId={districtId} />
+          ) : (
+            <div className="mt-6 rounded-xl bg-white p-5 text-center text-sm text-deep-sea-blue/70">
+              Please select your district to view disaster alerts.
+            </div>
+          ))}
 
         {/* Emergency SOS */}
         <section className="mt-8 rounded-3xl bg-night-bordeaux p-6 text-white sm:p-8">
