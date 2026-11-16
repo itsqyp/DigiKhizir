@@ -5,6 +5,7 @@ import alertsRoute from "./routes/alerts.js";
 import sheltersRoute from "./routes/shelters.js";
 import foodRoute from "./routes/food.js";
 import animalSheltersRoute from "./routes/animalShelters.js";
+import sosRoute from "./routes/sos.js";
 const app = new Hono();
 
 app.get("/", (c) => {
@@ -41,7 +42,7 @@ app.route("/api/alerts", alertsRoute);
 app.route("/api/shelters", sheltersRoute);
 app.route("/api/food", foodRoute);
 app.route("/api/animal-shelters", animalSheltersRoute);
-
+app.route("/api/sos", sosRoute);
 const port = Number(process.env.PORT) || 3000;
 
 serve(
