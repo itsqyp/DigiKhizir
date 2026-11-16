@@ -1,15 +1,46 @@
-import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { prisma } from "./lib/prisma.js";
 
-const app = new Hono()
+const app = new Hono();
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+app.get("/", (c) => {
+  return c.json({
+    status: "ok",
+    message: "DigiKhizir API is running",
+  });
+});
 
-serve({
-  fetch: app.fetch,
-  port: 3000
-}, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
-})
+app.get("/api/health", async (c) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+
+    return c.json({
+      status: "ok",
+      message: "DigiKhizir API and database are connected",
+      database: "connected",
+    });
+  } catch (error) {
+    console.error("Database health check failed:", error);
+
+    return c.json(
+      {
+        status: "error",
+        message: "Database connection failed",
+      },
+      500,
+    );
+  }
+});
+
+const port = Number(process.env.PORT) || 3000;
+
+serve(
+  {
+    fetch: app.fetch,
+    port,
+  },
+  (info) => {
+    console.log(`DigiKhizir API running on http://localhost:${info.port}`);
+  },
+);
