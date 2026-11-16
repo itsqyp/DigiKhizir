@@ -235,18 +235,15 @@ model AnimalShelter {
   updatedAt    DateTime @updatedAt
 }
 
+
 model AnimalShelterFacility {
-  id             String        @id @default(uuid())
-  name           String
-  nameBn         String?
-  available      Boolean       @default(true)
+  id              String        @id @default(uuid())
+  name            String
+  nameBn          String?
+  available       Boolean       @default(true)
 
   animalShelterId String
-  animalShelter  AnimalShelter @relation(
-    fields: [animalShelterId],
-    references: [id],
-    onDelete: Cascade
-  )
+  animalShelter   AnimalShelter @relation(fields: [animalShelterId], references: [id], onDelete: Cascade)
 
-  createdAt      DateTime      @default(now())
+  createdAt       DateTime      @default(now())
 }
