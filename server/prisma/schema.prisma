@@ -154,7 +154,11 @@ model ReliefPoint {
   latitude    Float
   longitude   Float
 
+
+
   contactPhone String?
+  dryFoodCapacityKg Int?
+  dryFoodStockKg    Int?
   isActive     Boolean @default(true)
 
   inventory   ReliefInventory[]
