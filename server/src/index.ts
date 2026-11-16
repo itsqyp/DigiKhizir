@@ -4,7 +4,7 @@ import { prisma } from "./lib/prisma.js";
 import alertsRoute from "./routes/alerts.js";
 import sheltersRoute from "./routes/shelters.js";
 import foodRoute from "./routes/food.js";
-
+import animalSheltersRoute from "./routes/animalShelters.js";
 const app = new Hono();
 
 app.get("/", (c) => {
@@ -40,6 +40,7 @@ app.get("/api/health", async (c) => {
 app.route("/api/alerts", alertsRoute);
 app.route("/api/shelters", sheltersRoute);
 app.route("/api/food", foodRoute);
+app.route("/api/animal-shelters", animalSheltersRoute);
 
 const port = Number(process.env.PORT) || 3000;
 
