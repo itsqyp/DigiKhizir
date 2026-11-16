@@ -26,7 +26,7 @@ export default function HomePage() {
         </p>
 
         <Link
-          to="/sos"
+          to="/resident"
           className="mt-8 inline-block rounded-xl bg-amethyst px-8 py-4 font-semibold text-white shadow-lg transition hover:scale-105 hover:brightness-110"
         >
           Get Started
