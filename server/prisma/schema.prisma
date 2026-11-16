@@ -45,6 +45,12 @@ enum ReliefCategory {
   CLOTHING
   OTHER
 }
+enum AnimalType {
+  PET
+  LIVESTOCK
+  POULTRY
+  OTHER
+}
 
 model User {
   id           String   @id @default(uuid())
