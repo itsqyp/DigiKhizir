@@ -24,7 +24,6 @@ alertsRoute.get("/", async (c) => {
 
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
-
       orderBy: {
         issuedAt: "desc",
       },
