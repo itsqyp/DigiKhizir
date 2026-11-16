@@ -132,26 +132,39 @@ model DisasterAlert {
   updatedAt   DateTime      @updatedAt
 }
 
+
 model SOSRequest {
-  id          String    @id @default(uuid())
+  id            String        @id @default(uuid())
 
-  requesterId String
-  requester   User      @relation("SOSRequester", fields: [requesterId], references: [id])
+  // Resident information (no account required)
+  name          String?
+  phone         String?
+  districtId    String?
 
-  responderId String?
-  responder   User?     @relation("SOSResponder", fields: [responderId], references: [id])
+  // Emergency information
+  emergencyType EmergencyType @default(OTHER)
+  latitude      Float
+  longitude     Float
+  address       String?
+  description   String?
 
-  latitude    Float
-  longitude   Float
-  address     String?
+  // Request progress
+  status        SOSStatus     @default(PENDING)
 
-  description String?
-  status      SOSStatus @default(PENDING)
+  // Optional account association
+  // Residents can submit SOS without an account.
+  requesterId   String?
+  requester     User?         @relation("SOSRequester", fields: [requesterId], references: [id])
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  resolvedAt  DateTime?
+  // Assigned responder
+  responderId   String?
+  responder     User?         @relation("SOSResponder", fields: [responderId], references: [id])
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  resolvedAt    DateTime?
 }
+
 
 model ReliefPoint {
   id          String  @id @default(uuid())
