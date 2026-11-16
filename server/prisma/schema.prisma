@@ -1,7 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
@@ -10,4 +6,194 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum UserRole {
+  RESIDENT
+  RESPONDER
+  ADMIN
+}
+
+enum AlertSeverity {
+  INFO
+  ADVISORY
+  WATCH
+  WARNING
+  DANGER
+}
+
+enum AlertStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum SOSStatus {
+  PENDING
+  ACKNOWLEDGED
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CANCELLED
+}
+
+enum ReliefCategory {
+  FOOD
+  WATER
+  MEDICINE
+  CLOTHING
+  OTHER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  phone        String   @unique
+  passwordHash String
+  role         UserRole @default(RESIDENT)
+
+  sosRequests  SOSRequest[] @relation("SOSRequester")
+  assignedSOS  SOSRequest[] @relation("SOSResponder")
+  notifications Notification[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Shelter {
+  id          String   @id @default(uuid())
+  name        String
+  nameBn      String?
+  address     String
+  districtId  String
+
+  latitude    Float
+  longitude   Float
+
+  capacity    Int
+  occupancy   Int?
+
+  isActive    Boolean  @default(true)
+
+  facilities  ShelterFacility[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ShelterFacility {
+  id        String  @id @default(uuid())
+  name      String
+  nameBn    String?
+  available Boolean @default(true)
+
+  shelterId String
+  shelter   Shelter @relation(fields: [shelterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model DisasterAlert {
+  id          String        @id @default(uuid())
+  title       String
+  titleBn     String?
+  message     String
+  messageBn   String?
+
+  severity    AlertSeverity
+  status      AlertStatus   @default(DRAFT)
+
+  districtIds String[]
+
+  source      String?
+  sourceUrl   String?
+
+  issuedAt    DateTime      @default(now())
+  expiresAt   DateTime?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model SOSRequest {
+  id          String    @id @default(uuid())
+
+  requesterId String
+  requester   User      @relation("SOSRequester", fields: [requesterId], references: [id])
+
+  responderId String?
+  responder   User?     @relation("SOSResponder", fields: [responderId], references: [id])
+
+  latitude    Float
+  longitude   Float
+  address     String?
+
+  description String?
+  status      SOSStatus @default(PENDING)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  resolvedAt  DateTime?
+}
+
+model ReliefPoint {
+  id          String  @id @default(uuid())
+  name        String
+  nameBn      String?
+  address     String
+  districtId  String
+
+  latitude    Float
+  longitude   Float
+
+  contactPhone String?
+  isActive     Boolean @default(true)
+
+  inventory   ReliefInventory[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ReliefInventory {
+  id          String         @id @default(uuid())
+
+  category    ReliefCategory
+  itemName    String
+  itemNameBn  String?
+
+  quantity    Int
+  unit        String
+
+  reliefPointId String
+  reliefPoint   ReliefPoint @relation(fields: [reliefPointId], references: [id], onDelete: Cascade)
+
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model Content {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  title     String
+  titleBn   String?
+  body      String
+  bodyBn    String?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 }
