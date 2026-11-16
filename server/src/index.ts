@@ -6,7 +6,18 @@ import sheltersRoute from "./routes/shelters.js";
 import foodRoute from "./routes/food.js";
 import animalSheltersRoute from "./routes/animalShelters.js";
 import sosRoute from "./routes/sos.js";
+import { cors } from "hono/cors";
 const app = new Hono();
+
+app.use(
+  "*",
+  cors({
+    origin: "http://localhost:5173",
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 
 app.get("/", (c) => {
   return c.json({
