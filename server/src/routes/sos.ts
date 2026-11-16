@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
+import type { Context } from "hono";
+import type { JWTPayload } from "hono/utils/jwt/types";
 import { prisma } from "../lib/prisma.js";
 
 const sosRoute = new Hono();
@@ -31,7 +33,10 @@ interface AuthenticatedResponder {
 }
 
 // Verify the JWT and confirm the user's current database role.
-async function getResponder(c: any): Promise<AuthenticatedResponder | null> {
+
+async function getResponder(
+  c: Context,
+): Promise<AuthenticatedResponder | null> {
   try {
     const authorization = c.req.header("Authorization");
 
@@ -47,7 +52,7 @@ async function getResponder(c: any): Promise<AuthenticatedResponder | null> {
       return null;
     }
 
-    const payload = await verify(token, secret);
+    const payload: JWTPayload = await verify(token, secret, "HS256");
 
     if (typeof payload.sub !== "string") {
       return null;
