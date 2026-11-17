@@ -1,7 +1,4 @@
-import type { MapCoordinates, MapFacility } from "./mapTypes";
-
-// Calculate distance between two coordinates using Haversine formula.
-// Returns distance in kilometers.
+import type { MapCoordinates, MapFacility, MapFeatureType } from "./mapTypes";
 
 export function calculateDistance(
   origin: MapCoordinates,
@@ -28,33 +25,27 @@ export function calculateDistance(
   return earthRadiusKm * c;
 }
 
-// Find the nearest facility from the user's current location.
-
 export function findNearestFacility(
   userLocation: MapCoordinates,
   facilities: MapFacility[],
 ): MapFacility | null {
-  if (facilities.length === 0) {
-    return null;
-  }
+  if (facilities.length === 0) return null;
 
-  let nearestFacility = facilities[0];
-  let shortestDistance = calculateDistance(userLocation, {
-    latitude: nearestFacility.latitude,
-    longitude: nearestFacility.longitude,
+  return facilities.reduce((nearest, facility) => {
+    const nearestDistance = calculateDistance(userLocation, nearest);
+    const currentDistance = calculateDistance(userLocation, facility);
+
+    return currentDistance < nearestDistance ? facility : nearest;
   });
+}
 
-  for (const facility of facilities.slice(1)) {
-    const distance = calculateDistance(userLocation, {
-      latitude: facility.latitude,
-      longitude: facility.longitude,
-    });
-
-    if (distance < shortestDistance) {
-      shortestDistance = distance;
-      nearestFacility = facility;
-    }
+export function getMarkerColor(type: MapFeatureType): string {
+  switch (type) {
+    case "shelter":
+      return "#16a34a";
+    case "food":
+      return "#ea580c";
+    case "animal":
+      return "#9333ea";
   }
-
-  return nearestFacility;
 }
