@@ -4,6 +4,7 @@ import DisasterAlerts from "../../components/resident/alerts/DisasterAlerts";
 import SafeShelters from "../../components/resident/shelters/SafeShelters";
 import FoodRelief from "../../components/resident/food/FoodRelief";
 import AnimalShelters from "../../components/resident/animals/AnimalShelters";
+import ResidentMap from "../../components/resident/map/ResidentMap";
 import {
   MapPin,
   Navigation,
@@ -174,6 +175,8 @@ export default function ResidentHomePage() {
               {coordinates ? "Refresh my location" : "Detect my location"}
             </span>
           </button>
+
+          {coordinates && <ResidentMap userLocation={coordinates} />}
 
           <label
             htmlFor="district"
