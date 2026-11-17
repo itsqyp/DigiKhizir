@@ -176,7 +176,13 @@ export default function ResidentHomePage() {
             </span>
           </button>
 
-          {coordinates && <ResidentMap userLocation={coordinates} />}
+          {coordinates && districtId && (
+            <ResidentMap
+              userLocation={coordinates}
+              districtId={districtId}
+              selectedFeatures={selectedFeatures}
+            />
+          )}
 
           <label
             htmlFor="district"
