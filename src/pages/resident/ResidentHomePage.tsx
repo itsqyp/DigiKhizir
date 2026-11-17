@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import DisasterAlerts from "../../components/resident/alerts/DisasterAlerts";
 import SafeShelters from "../../components/resident/shelters/SafeShelters";
+import FoodRelief from "../../components/resident/food/FoodRelief";
 import {
   MapPin,
   Navigation,
@@ -287,6 +288,15 @@ export default function ResidentHomePage() {
           ) : (
             <div className="mt-6 rounded-xl bg-white p-5 text-center text-sm text-deep-sea-blue/70">
               Please select your district to find safe shelters.
+            </div>
+          ))}
+
+        {selectedFeatures.includes("food") &&
+          (districtId ? (
+            <FoodRelief key={districtId} districtId={districtId} />
+          ) : (
+            <div className="mt-6 rounded-xl bg-white p-5 text-center text-sm text-deep-sea-blue/70">
+              Please select your district to view food and relief locations.
             </div>
           ))}
 
