@@ -19,6 +19,7 @@ import {
 
 import { API_BASE_URL } from "../../lib/api";
 import { clearAdminSession, getAdminSession } from "../../lib/adminAuth";
+import HumanSheltersSection from "./sections/HumanSheltersSection";
 
 const navigation = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -331,183 +332,172 @@ export default function AdminDashboardPage() {
           </header>
 
           <div className="p-5 sm:p-8">
-            {/* Welcome Section */}
-            <section className="mb-8 overflow-hidden rounded-2xl bg-deep-sea-blue p-7 text-white shadow-lg sm:p-9">
-              <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
-                <div>
-                  <p className="mb-2 text-sm font-medium text-cotton-candy">
-                    ADMINISTRATION CENTER
-                  </p>
+            {activePage === "shelters" ? (
+              <HumanSheltersSection />
+            ) : (
+              <>
+                {/* Welcome Section */}
+                <section className="mb-8 overflow-hidden rounded-2xl bg-deep-sea-blue p-7 text-white shadow-lg sm:p-9">
+                  <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
+                    <div>
+                      <p className="mb-2 text-sm font-medium text-cotton-candy">
+                        ADMINISTRATION CENTER
+                      </p>
+                      <h2 className="font-poppins text-2xl font-bold sm:text-3xl">
+                        Welcome back, {adminName}.
+                      </h2>
+                      <p className="mt-3 max-w-xl text-sm leading-6 text-white/65">
+                        Manage disaster preparedness resources, monitor
+                        community facilities and keep information up to date.
+                      </p>
+                    </div>
+                    <div className="hidden h-24 w-24 items-center justify-center rounded-2xl bg-white/10 sm:flex">
+                      <Activity size={45} className="text-cotton-candy" />
+                    </div>
+                  </div>
+                </section>
 
-                  <h2 className="font-poppins text-2xl font-bold sm:text-3xl">
-                    Welcome back, {adminName}.
-                  </h2>
+                {/* Statistics */}
+                <section className="mb-9">
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-poppins text-lg font-bold">
+                        System Overview
+                      </h3>
+                      <p className="mt-1 text-sm text-deep-sea-blue/55">
+                        Your resource management at a glance.
+                      </p>
+                    </div>
 
-                  <p className="mt-3 max-w-xl text-sm leading-6 text-white/65">
-                    Manage disaster preparedness resources, monitor community
-                    facilities and keep information up to date.
-                  </p>
-                </div>
+                    <button
+                      onClick={handleRefresh}
+                      disabled={isLoading}
+                      className="inline-flex items-center gap-2 rounded-lg border border-deep-sea-blue/10 bg-white px-4 py-2 text-sm font-medium transition hover:border-amethyst/40 hover:text-amethyst disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <RefreshCw
+                        size={16}
+                        className={isLoading ? "animate-spin" : ""}
+                      />
+                      Refresh
+                    </button>
+                  </div>
 
-                <div className="hidden h-24 w-24 items-center justify-center rounded-2xl bg-white/10 sm:flex">
-                  <Activity size={45} className="text-cotton-candy" />
-                </div>
-              </div>
-            </section>
+                  {isLoading && (
+                    <div className="mb-4 rounded-xl border border-amethyst/20 bg-white p-4 text-sm text-deep-sea-blue/60">
+                      Loading dashboard statistics...
+                    </div>
+                  )}
 
-            {/* Statistics */}
-            <section className="mb-9">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-poppins text-lg font-bold">
-                    System Overview
-                  </h3>
+                  {statsError && !isLoading && (
+                    <div
+                      role="alert"
+                      className="mb-4 flex flex-col justify-between gap-3 rounded-xl border border-night-bordeaux/20 bg-white p-4 sm:flex-row sm:items-center"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-night-bordeaux">
+                          Could not load statistics
+                        </p>
+                        <p className="mt-1 text-xs text-deep-sea-blue/60">
+                          {statsError}
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleRefresh}
+                        className="shrink-0 rounded-lg bg-deep-sea-blue px-4 py-2 text-sm font-medium text-white transition hover:bg-amethyst"
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  )}
 
-                  <p className="mt-1 text-sm text-deep-sea-blue/55">
-                    Your resource management at a glance.
-                  </p>
-                </div>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {statCards.map((stat) => {
+                      const Icon = stat.icon;
+                      const value = stats[stat.key];
 
-                <button
-                  onClick={handleRefresh}
-                  disabled={isLoading}
-                  className="inline-flex items-center gap-2 rounded-lg border border-deep-sea-blue/10 bg-white px-4 py-2 text-sm font-medium transition hover:border-amethyst/40 hover:text-amethyst disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <RefreshCw
-                    size={16}
-                    className={isLoading ? "animate-spin" : ""}
-                  />
-                  Refresh
-                </button>
-              </div>
+                      return (
+                        <div
+                          key={stat.key}
+                          className="rounded-2xl border border-deep-sea-blue/10 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div
+                              className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.color}`}
+                            >
+                              <Icon size={21} />
+                            </div>
+                            <span className="text-xs text-deep-sea-blue/40">
+                              DATABASE
+                            </span>
+                          </div>
+                          <p className="mt-5 text-3xl font-bold">
+                            {isLoading ? "..." : statsError ? "—" : value}
+                          </p>
+                          <h4 className="mt-1 font-semibold">{stat.label}</h4>
+                          <p className="mt-2 text-xs text-deep-sea-blue/50">
+                            {stat.description}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
 
-              {/* Loading State */}
-              {isLoading && (
-                <div className="mb-4 rounded-xl border border-amethyst/20 bg-white p-4 text-sm text-deep-sea-blue/60">
-                  Loading dashboard statistics...
-                </div>
-              )}
-
-              {/* Error State */}
-              {statsError && !isLoading && (
-                <div
-                  role="alert"
-                  className="mb-4 flex flex-col justify-between gap-3 rounded-xl border border-night-bordeaux/20 bg-white p-4 sm:flex-row sm:items-center"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-night-bordeaux">
-                      Could not load statistics
-                    </p>
-                    <p className="mt-1 text-xs text-deep-sea-blue/60">
-                      {statsError}
+                {/* Resource Management */}
+                <section>
+                  <div className="mb-5">
+                    <h3 className="font-poppins text-lg font-bold">
+                      Resource Management
+                    </h3>
+                    <p className="mt-1 text-sm text-deep-sea-blue/55">
+                      Select a section to manage its information.
                     </p>
                   </div>
 
-                  <button
-                    onClick={handleRefresh}
-                    className="shrink-0 rounded-lg bg-deep-sea-blue px-4 py-2 text-sm font-medium text-white transition hover:bg-amethyst"
-                  >
-                    Try again
-                  </button>
-                </div>
-              )}
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {navigation.slice(1).map((item) => {
+                      const Icon = item.icon;
 
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {statCards.map((stat) => {
-                  const Icon = stat.icon;
-                  const value = stats[stat.key];
-
-                  return (
-                    <div
-                      key={stat.key}
-                      className="rounded-2xl border border-deep-sea-blue/10 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div
-                          className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.color}`}
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActivePage(item.id)}
+                          className="group flex items-center gap-5 rounded-2xl border border-deep-sea-blue/10 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-amethyst/40 hover:shadow-md"
                         >
-                          <Icon size={21} />
-                        </div>
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-mint-cream text-amethyst transition group-hover:bg-amethyst group-hover:text-white">
+                            <Icon size={26} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold">{item.label}</h4>
+                            <p className="mt-1 text-sm text-deep-sea-blue/50">
+                              Manage and update {item.label.toLowerCase()}.
+                            </p>
+                          </div>
+                          <span className="text-xl text-deep-sea-blue/30 transition group-hover:translate-x-1 group-hover:text-amethyst">
+                            →
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
 
-                        <span className="text-xs text-deep-sea-blue/40">
-                          DATABASE
-                        </span>
-                      </div>
-
-                      <p className="mt-5 text-3xl font-bold">
-                        {isLoading ? "..." : statsError ? "—" : value}
-                      </p>
-
-                      <h4 className="mt-1 font-semibold">{stat.label}</h4>
-
-                      <p className="mt-2 text-xs text-deep-sea-blue/50">
-                        {stat.description}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Resource Management */}
-            <section>
-              <div className="mb-5">
-                <h3 className="font-poppins text-lg font-bold">
-                  Resource Management
-                </h3>
-
-                <p className="mt-1 text-sm text-deep-sea-blue/55">
-                  Select a section to manage its information.
-                </p>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                {navigation.slice(1).map((item) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActivePage(item.id)}
-                      className="group flex items-center gap-5 rounded-2xl border border-deep-sea-blue/10 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-amethyst/40 hover:shadow-md"
-                    >
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-mint-cream text-amethyst transition group-hover:bg-amethyst group-hover:text-white">
-                        <Icon size={26} />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-semibold">{item.label}</h4>
-
-                        <p className="mt-1 text-sm text-deep-sea-blue/50">
-                          Manage and update {item.label.toLowerCase()}.
-                        </p>
-                      </div>
-
-                      <span className="text-xl text-deep-sea-blue/30 transition group-hover:translate-x-1 group-hover:text-amethyst">
-                        →
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Database Status */}
-            <div className="mt-8 flex items-start gap-3 rounded-xl border border-amethyst/20 bg-white p-4">
-              <MapPin className="mt-0.5 shrink-0 text-amethyst" size={19} />
-
-              <div>
-                <p className="text-sm font-semibold">Database connection</p>
-
-                <p className="mt-1 text-xs leading-5 text-deep-sea-blue/55">
-                  {statsError
-                    ? "Unable to retrieve the latest database statistics. Check your connection and try again."
-                    : isLoading
-                      ? "Connecting to the database and retrieving resource statistics..."
-                      : "Dashboard statistics are successfully retrieved from the DigiKhizir database."}
-                </p>
-              </div>
-            </div>
+                {/* Database Status */}
+                <div className="mt-8 flex items-start gap-3 rounded-xl border border-amethyst/20 bg-white p-4">
+                  <MapPin className="mt-0.5 shrink-0 text-amethyst" size={19} />
+                  <div>
+                    <p className="text-sm font-semibold">Database connection</p>
+                    <p className="mt-1 text-xs leading-5 text-deep-sea-blue/55">
+                      {statsError
+                        ? "Unable to retrieve the latest database statistics. Check your connection and try again."
+                        : isLoading
+                          ? "Connecting to the database and retrieving resource statistics..."
+                          : "Dashboard statistics are successfully retrieved from the DigiKhizir database."}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </main>
       </div>
