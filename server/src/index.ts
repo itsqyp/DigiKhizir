@@ -6,6 +6,7 @@ import sheltersRoute from "./routes/shelters.js";
 import foodRoute from "./routes/food.js";
 import animalSheltersRoute from "./routes/animalShelters.js";
 import sosRoute from "./routes/sos.js";
+import authRoute from "./routes/auth.js";
 import { cors } from "hono/cors";
 const app = new Hono();
 
@@ -54,6 +55,7 @@ app.route("/api/shelters", sheltersRoute);
 app.route("/api/food", foodRoute);
 app.route("/api/animal-shelters", animalSheltersRoute);
 app.route("/api/sos", sosRoute);
+app.route("/api/auth", authRoute);
 const port = Number(process.env.PORT) || 3000;
 
 serve(
