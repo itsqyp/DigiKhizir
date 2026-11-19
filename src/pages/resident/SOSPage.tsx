@@ -7,7 +7,7 @@ export default function SOSPage() {
     <main className="min-h-screen bg-mint-cream px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-3xl">
         <Link
-          to="/"
+          to="/resident"
           className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-deep-sea-blue transition hover:text-amethyst"
         >
           <ArrowLeft size={18} />
