@@ -12,6 +12,7 @@ import adminRoute from "./routes/admin.js";
 import adminSheltersRoute from "./routes/admin/shelters.js";
 import adminFoodRoute from "./routes/admin/food.js";
 import adminAnimalSheltersRoute from "./routes/admin/animalShelters.js";
+import adminAlertsRoute from "./routes/admin/alerts.js";
 import { cors } from "hono/cors";
 const app = new Hono();
 
