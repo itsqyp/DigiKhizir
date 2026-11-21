@@ -21,6 +21,7 @@ import { API_BASE_URL } from "../../lib/api";
 import { clearAdminSession, getAdminSession } from "../../lib/adminAuth";
 import HumanSheltersSection from "./sections/HumanSheltersSection";
 import FoodReliefSection from "./sections/FoodReliefSection";
+import AnimalSheltersSection from "./sections/AnimalSheltersSection";
 const navigation = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "shelters", label: "Human Shelters", icon: House },
@@ -336,6 +337,8 @@ export default function AdminDashboardPage() {
               <HumanSheltersSection />
             ) : activePage === "food" ? (
               <FoodReliefSection />
+            ) : activePage === "animals" ? (
+              <AnimalSheltersSection />
             ) : (
               <>
                 {/* Welcome Section */}
