@@ -11,6 +11,7 @@ import authRoute from "./routes/auth.js";
 import adminRoute from "./routes/admin.js";
 import adminSheltersRoute from "./routes/admin/shelters.js";
 import adminFoodRoute from "./routes/admin/food.js";
+import adminAnimalSheltersRoute from "./routes/admin/animalShelters.js";
 import { cors } from "hono/cors";
 const app = new Hono();
 
@@ -63,6 +64,7 @@ app.route("/api/auth", authRoute);
 app.route("/api/admin", adminRoute);
 app.route("/api/admin/shelters", adminSheltersRoute);
 app.route("/api/admin/food", adminFoodRoute);
+app.route("/api/admin/animal-shelters", adminAnimalSheltersRoute);
 const port = Number(process.env.PORT) || 3000;
 
 serve(
