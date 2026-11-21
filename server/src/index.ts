@@ -66,6 +66,7 @@ app.route("/api/admin", adminRoute);
 app.route("/api/admin/shelters", adminSheltersRoute);
 app.route("/api/admin/food", adminFoodRoute);
 app.route("/api/admin/animal-shelters", adminAnimalSheltersRoute);
+app.route("/api/admin/alerts", adminAlertsRoute);
 const port = Number(process.env.PORT) || 3000;
 
 serve(
@@ -77,3 +78,4 @@ serve(
     console.log(`DigiKhizir API running on http://localhost:${info.port}`);
   },
 );
+export default app;
