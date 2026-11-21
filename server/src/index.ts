@@ -10,6 +10,7 @@ import sosRoute from "./routes/sos.js";
 import authRoute from "./routes/auth.js";
 import adminRoute from "./routes/admin.js";
 import adminSheltersRoute from "./routes/admin/shelters.js";
+import adminFoodRoute from "./routes/admin/food.js";
 import { cors } from "hono/cors";
 const app = new Hono();
 
@@ -61,6 +62,7 @@ app.route("/api/sos", sosRoute);
 app.route("/api/auth", authRoute);
 app.route("/api/admin", adminRoute);
 app.route("/api/admin/shelters", adminSheltersRoute);
+app.route("/api/admin/food", adminFoodRoute);
 const port = Number(process.env.PORT) || 3000;
 
 serve(
