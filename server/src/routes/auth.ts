@@ -43,14 +43,11 @@ authRoute.post("/login", async (c) => {
     // Only ADMIN accounts can use this dashboard login.
     if (
       !user ||
-      user.role !== "ADMIN" ||
+      !["ADMIN", "RESPONDER"].includes(user.role) ||
       !(await bcrypt.compare(password, user.passwordHash))
     ) {
       return c.json(
-        {
-          success: false,
-          message: "Invalid username or password.",
-        },
+        { success: false, message: "Invalid username or password." },
         401,
       );
     }
