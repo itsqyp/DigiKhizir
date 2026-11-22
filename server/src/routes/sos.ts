@@ -212,8 +212,9 @@ sosRoute.post("/", async (c) => {
   }
 });
 
-// GET /api/sos
+// GET /api/sos?page=1
 // Protected: responders and admins.
+// Returns 10 requests per page.
 
 sosRoute.get("/", async (c) => {
   try {
@@ -231,6 +232,7 @@ sosRoute.get("/", async (c) => {
 
     const status = c.req.query("status")?.toUpperCase();
     const districtId = c.req.query("districtId")?.toLowerCase();
+    const page = Number(c.req.query("page") ?? "1");
 
     if (status && !sosStatuses.includes(status as SOSStatus)) {
       return c.json(
@@ -243,41 +245,63 @@ sosRoute.get("/", async (c) => {
       );
     }
 
-    const requests = await prisma.sOSRequest.findMany({
-      where: {
-        ...(status ? { status: status as SOSStatus } : {}),
-        ...(districtId ? { districtId } : {}),
-        ...(responder.role === "RESPONDER"
-          ? {
-              OR: [{ responderId: responder.id }, { status: "PENDING" }],
-            }
-          : {}),
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 100,
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        districtId: true,
-        emergencyType: true,
-        latitude: true,
-        longitude: true,
-        address: true,
-        description: true,
-        status: true,
-        responderId: true,
-        createdAt: true,
-        updatedAt: true,
-        resolvedAt: true,
-      },
-    });
+    if (!Number.isInteger(page) || page < 1) {
+      return c.json(
+        {
+          success: false,
+          message: "Page must be a positive integer.",
+        },
+        400,
+      );
+    }
+
+    const pageSize = 10;
+
+    const where = {
+      ...(status ? { status: status as SOSStatus } : {}),
+      ...(districtId ? { districtId } : {}),
+      ...(responder.role === "RESPONDER"
+        ? {
+            OR: [{ responderId: responder.id }, { status: "PENDING" as const }],
+          }
+        : {}),
+    };
+
+    const [total, requests] = await Promise.all([
+      prisma.sOSRequest.count({ where }),
+      prisma.sOSRequest.findMany({
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          districtId: true,
+          emergencyType: true,
+          latitude: true,
+          longitude: true,
+          address: true,
+          description: true,
+          status: true,
+          responderId: true,
+          createdAt: true,
+          updatedAt: true,
+          resolvedAt: true,
+        },
+      }),
+    ]);
 
     return c.json({
       success: true,
       count: requests.length,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
       data: requests,
     });
   } catch (error) {
@@ -564,6 +588,71 @@ sosRoute.patch("/:id/status", async (c) => {
       {
         success: false,
         message: "Failed to update SOS request.",
+      },
+      500,
+    );
+  }
+});
+
+// DELETE /api/sos/:id
+// Admin only: permanently deletes an SOS request.
+
+sosRoute.delete("/:id", async (c) => {
+  try {
+    const responder = await getResponder(c);
+
+    if (!responder) {
+      return c.json(
+        {
+          success: false,
+          message: "Authentication required.",
+        },
+        401,
+      );
+    }
+
+    if (responder.role !== "ADMIN") {
+      return c.json(
+        {
+          success: false,
+          message: "Only administrators can delete SOS requests.",
+        },
+        403,
+      );
+    }
+
+    const { id } = c.req.param();
+
+    const existing = await prisma.sOSRequest.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return c.json(
+        {
+          success: false,
+          message: "SOS request not found.",
+        },
+        404,
+      );
+    }
+
+    await prisma.sOSRequest.delete({
+      where: { id },
+    });
+
+    return c.json({
+      success: true,
+      message: "SOS request deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Failed to delete SOS request:", error);
+
+    return c.json(
+      {
+        success: false,
+        message: "Failed to delete SOS request.",
       },
       500,
     );
