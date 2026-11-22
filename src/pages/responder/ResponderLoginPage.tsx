@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
 
@@ -31,11 +31,11 @@ export default function ResponderLoginPage() {
   const [error, setError] = useState("");
 
   // If a valid responder session already exists, go straight to the inbox.
-  const existingSession = getResponderSession();
-
-  if (existingSession) {
-    navigate("/responder/sos", { replace: true });
-  }
+  useEffect(() => {
+    if (getResponderSession()) {
+      navigate("/responder/sos", { replace: true });
+    }
+  }, [navigate]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
