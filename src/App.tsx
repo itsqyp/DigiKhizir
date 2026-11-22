@@ -11,6 +11,9 @@ import { getAdminSession } from "./lib/adminAuth";
 import ResponderLoginPage from "./pages/responder/ResponderLoginPage";
 import ProtectedResponderRoute from "./components/responder/ProtectedResponderRoute";
 
+import SOSInboxPage from "./pages/responder/SOSInboxPage";
+import SOSDetailsPage from "./pages/responder/SOSDetailsPage";
+
 function ProtectedAdminRoute() {
   const session = getAdminSession();
 
@@ -34,14 +37,8 @@ function App() {
         <Route path="/responder/login" element={<ResponderLoginPage />} />
 
         <Route element={<ProtectedResponderRoute />}>
-          <Route
-            path="/responder/sos"
-            element={
-              <div className="p-8 text-deep-sea-blue">
-                SOS Inbox coming next.
-              </div>
-            }
-          />
+          <Route path="/responder/sos" element={<SOSInboxPage />} />
+          <Route path="/responder/sos/:id" element={<SOSDetailsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
