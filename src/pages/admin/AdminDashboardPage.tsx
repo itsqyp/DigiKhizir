@@ -23,6 +23,7 @@ import HumanSheltersSection from "./sections/HumanSheltersSection";
 import FoodReliefSection from "./sections/FoodReliefSection";
 import AnimalSheltersSection from "./sections/AnimalSheltersSection";
 import DisasterAlertsSection from "./sections/DisasterAlertsSection";
+import SettingsSection from "./sections/SettingsSection";
 const navigation = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "shelters", label: "Human Shelters", icon: House },
@@ -342,6 +343,8 @@ export default function AdminDashboardPage() {
               <AnimalSheltersSection />
             ) : activePage === "alerts" ? (
               <DisasterAlertsSection />
+            ) : activePage === "settings" ? (
+              <SettingsSection />
             ) : (
               <>
                 {/* Welcome Section */}
