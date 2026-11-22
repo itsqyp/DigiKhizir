@@ -15,6 +15,7 @@ import {
   Package,
   Activity,
   RefreshCw,
+  Siren,
 } from "lucide-react";
 
 import { API_BASE_URL } from "../../lib/api";
@@ -24,6 +25,7 @@ import FoodReliefSection from "./sections/FoodReliefSection";
 import AnimalSheltersSection from "./sections/AnimalSheltersSection";
 import DisasterAlertsSection from "./sections/DisasterAlertsSection";
 import SettingsSection from "./sections/SettingsSection";
+
 const navigation = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "shelters", label: "Human Shelters", icon: House },
@@ -187,6 +189,12 @@ export default function AdminDashboardPage() {
     setRefreshKey((previous) => previous + 1);
   }
 
+  // Navigate to the responder SOS inbox
+  function openSOSInbox() {
+    setSidebarOpen(false);
+    navigate("/responder/sos");
+  }
+
   return (
     <div className="min-h-screen bg-mint-cream font-inter text-deep-sea-blue">
       {/* Mobile Header */}
@@ -258,6 +266,15 @@ export default function AdminDashboardPage() {
                   </button>
                 );
               })}
+
+              {/* SOS Inbox Navigation */}
+              <button
+                onClick={openSOSInbox}
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                <Siren size={19} />
+                SOS Inbox
+              </button>
             </nav>
 
             <p className="mb-4 mt-10 px-3 text-xs font-semibold uppercase tracking-widest text-white/40">
