@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { API_BASE_URL } from "../../lib/api";
+
 const emergencyTypes = [
   { value: "FLOOD_TRAPPED", label: "Trapped in flood", icon: "🌊" },
   { value: "RESCUE", label: "Need rescue", icon: "🆘" },
@@ -8,6 +9,28 @@ const emergencyTypes = [
   { value: "ANIMAL_RESCUE", label: "Animal rescue", icon: "🐄" },
   { value: "OTHER", label: "Other emergency", icon: "⚠️" },
 ] as const;
+
+const districts = [
+  { id: "bhola", name: "Bhola" },
+  { id: "patuakhali", name: "Patuakhali" },
+  { id: "barguna", name: "Barguna" },
+  { id: "noakhali", name: "Noakhali" },
+  { id: "lakshmipur", name: "Lakshmipur" },
+  { id: "satkhira", name: "Satkhira" },
+  { id: "khulna", name: "Khulna" },
+  { id: "bagerhat", name: "Bagerhat" },
+  { id: "coxsbazar", name: "Cox's Bazar" },
+  { id: "chattogram", name: "Chattogram" },
+  { id: "feni", name: "Feni" },
+  { id: "barishal", name: "Barishal" },
+  { id: "pirojpur", name: "Pirojpur" },
+  { id: "jhalokati", name: "Jhalokati" },
+  { id: "chandpur", name: "Chandpur" },
+  { id: "shariatpur", name: "Shariatpur" },
+  { id: "gopalganj", name: "Gopalganj" },
+  { id: "narail", name: "Narail" },
+  { id: "jashore", name: "Jashore" },
+];
 
 type EmergencyType = (typeof emergencyTypes)[number]["value"];
 
@@ -22,6 +45,8 @@ export default function SOSForm() {
   );
 
   const [emergencyType, setEmergencyType] = useState<EmergencyType | "">("");
+  const [districtId, setDistrictId] = useState("");
+  const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
@@ -88,6 +113,8 @@ export default function SOSForm() {
           latitude: location.latitude,
           longitude: location.longitude,
           emergencyType,
+          districtId: districtId || undefined,
+          address: address.trim() || undefined,
           name: name.trim() || undefined,
           phone: phone.trim() || undefined,
           description: description.trim() || undefined,
@@ -105,6 +132,8 @@ export default function SOSForm() {
       );
 
       setEmergencyType("");
+      setDistrictId("");
+      setAddress("");
       setName("");
       setPhone("");
       setDescription("");
@@ -194,10 +223,56 @@ export default function SOSForm() {
           </div>
         </div>
 
+        {/* District */}
+        <div>
+          <label
+            htmlFor="sos-district"
+            className="mb-2 block text-sm font-semibold text-deep-sea-blue"
+          >
+            Your district (optional)
+          </label>
+
+          <select
+            id="sos-district"
+            value={districtId}
+            onChange={(e) => setDistrictId(e.target.value)}
+            className={inputClasses}
+          >
+            <option value="">Select your district</option>
+
+            {districts.map((district) => (
+              <option key={district.id} value={district.id}>
+                {district.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Address */}
+        <div>
+          <label
+            htmlFor="sos-address"
+            className="mb-2 block text-sm font-semibold text-deep-sea-blue"
+          >
+            Your address / current location (optional)
+          </label>
+
+          <textarea
+            id="sos-address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            maxLength={300}
+            rows={2}
+            className={`${inputClasses} resize-none`}
+            placeholder="Enter your village, road, union, or nearby landmark"
+          />
+        </div>
+
         <div>
           <label className="mb-2 block text-sm font-semibold text-deep-sea-blue">
             Your name (optional)
           </label>
+
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -211,6 +286,7 @@ export default function SOSForm() {
           <label className="mb-2 block text-sm font-semibold text-deep-sea-blue">
             Phone number (optional)
           </label>
+
           <input
             type="tel"
             value={phone}
@@ -225,6 +301,7 @@ export default function SOSForm() {
           <label className="mb-2 block text-sm font-semibold text-deep-sea-blue">
             Additional details (optional)
           </label>
+
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
