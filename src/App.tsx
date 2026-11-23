@@ -1,8 +1,15 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
 import ResidentHomePage from "./pages/resident/ResidentHomePage";
 import SOSPage from "./pages/resident/SOSPage";
+
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 
@@ -21,25 +28,53 @@ function ProtectedAdminRoute() {
     return <Navigate to="/admin/login" replace />;
   }
 
-  return <AdminDashboardPage />;
+  return <Outlet />;
 }
-
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/resident" element={<ResidentHomePage />} />
         <Route path="/sos" element={<SOSPage />} />
 
+        {/* Admin login */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/admin" element={<ProtectedAdminRoute />} />
+
+        {/* Protected admin routes */}
+        <Route element={<ProtectedAdminRoute />}>
+          <Route path="/admin" element={<AdminDashboardPage />} />
+
+          <Route
+            path="/admin/responder/sos"
+            element={<SOSInboxPage audience="admin" />}
+          />
+
+          <Route
+            path="/admin/responder/sos/:id"
+            element={<SOSDetailsPage audience="admin" />}
+          />
+        </Route>
+
+        {/* Responder login */}
         <Route path="/responder/login" element={<ResponderLoginPage />} />
 
+        {/* Protected responder routes */}
         <Route element={<ProtectedResponderRoute />}>
-          <Route path="/responder/sos" element={<SOSInboxPage />} />
-          <Route path="/responder/sos/:id" element={<SOSDetailsPage />} />
+          <Route
+            path="/responder/sos"
+            element={<SOSInboxPage audience="responder" />}
+          />
+
+          <Route
+            path="/responder/sos/:id"
+            element={<SOSDetailsPage audience="responder" />}
+          />
         </Route>
+
+        {/* Unknown routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

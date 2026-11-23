@@ -192,7 +192,7 @@ export default function AdminDashboardPage() {
   // Navigate to the responder SOS inbox
   function openSOSInbox() {
     setSidebarOpen(false);
-    navigate("/responder/sos");
+    navigate("/admin/responder/sos");
   }
 
   return (

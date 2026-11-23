@@ -1,22 +1,26 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Check,
   LoaderCircle,
+  LogOut,
   MapPin,
   Phone,
   User,
 } from "lucide-react";
 
 import { API_BASE_URL } from "../../lib/api";
-import { getResponderSession } from "../../lib/responderAuth";
+import {
+  getResponderSession,
+  clearResponderSession,
+} from "../../lib/responderAuth";
 import { getAdminSession } from "../../lib/adminAuth";
 import type { SOSRequest } from "../../types/sos";
 
-function getSession() {
-  return getResponderSession() ?? getAdminSession();
-}
+type SOSDetailsPageProps = {
+  audience: "admin" | "responder";
+};
 
 function getEmergencyTitle(type: SOSRequest["emergencyType"]) {
   const titles = {
@@ -35,16 +39,25 @@ function getStatusLabel(status: SOSRequest["status"]) {
   return status.replaceAll("_", " ");
 }
 
-export default function SOSDetailsPage() {
+export default function SOSDetailsPage({ audience }: SOSDetailsPageProps) {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [request, setRequest] = useState<SOSRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const session = getSession();
+  // Each interface uses its own session.
+  const session =
+    audience === "admin" ? getAdminSession() : getResponderSession();
+
   const token = session?.token;
+  const isAdmin = audience === "admin";
+
+  // const inboxPath = isAdmin
+  //   ? "/admin/responder/sos"
+  //   : "/responder/sos";
 
   useEffect(() => {
     const controller = new AbortController();
@@ -71,6 +84,7 @@ export default function SOSDetailsPage() {
         }
 
         setRequest(result.data);
+        setError("");
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") return;
 
@@ -123,16 +137,44 @@ export default function SOSDetailsPage() {
     }
   }
 
+  function handleLogout() {
+    clearResponderSession();
+    navigate("/responder/login", { replace: true });
+  }
+
   return (
     <main className="min-h-screen bg-mint-cream px-4 py-8 text-deep-sea-blue sm:px-8">
       <div className="mx-auto max-w-2xl">
-        <Link
-          to="/responder/sos"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-deep-sea-blue/65 transition hover:text-deep-sea-blue"
-        >
-          <ArrowLeft size={16} />
-          Back to SOS inbox
-        </Link>
+        <div className="mb-6 flex items-center justify-between gap-4">
+          {isAdmin ? (
+            <Link
+              to="/admin/responder/sos"
+              className="inline-flex items-center gap-2 text-sm text-deep-sea-blue/65 transition hover:text-deep-sea-blue"
+            >
+              <ArrowLeft size={16} />
+              Back to SOS inbox
+            </Link>
+          ) : (
+            <Link
+              to="/responder/sos"
+              className="inline-flex items-center gap-2 text-sm text-deep-sea-blue/65 transition hover:text-deep-sea-blue"
+            >
+              <ArrowLeft size={16} />
+              Back to SOS inbox
+            </Link>
+          )}
+
+          {!isAdmin && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 rounded-xl bg-night-bordeaux px-4 py-2 text-sm font-semibold text-white transition hover:bg-night-bordeaux/90"
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
+          )}
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center gap-3 py-20 text-sm text-deep-sea-blue/60">
@@ -149,24 +191,29 @@ export default function SOSDetailsPage() {
               <p className="text-sm font-medium text-deep-sea-blue/50">
                 SOS REQUEST
               </p>
+
               <h1 className="mt-2 text-3xl font-bold">
                 {getEmergencyTitle(request.emergencyType)}
               </h1>
+
               <p className="mt-2 text-sm text-deep-sea-blue/55">
                 Received {new Date(request.createdAt).toLocaleString()}
               </p>
             </header>
 
             <section className="space-y-5 rounded-2xl border border-deep-sea-blue/10 bg-white p-5 shadow-sm sm:p-7">
+              {/* Status */}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-deep-sea-blue/45">
                   Status
                 </p>
+
                 <p className="mt-2 font-semibold">
                   {getStatusLabel(request.status)}
                 </p>
               </div>
 
+              {/* Contact information */}
               <div className="border-t border-deep-sea-blue/10 pt-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-deep-sea-blue/45">
                   Contact information
@@ -191,6 +238,7 @@ export default function SOSDetailsPage() {
                 </div>
               </div>
 
+              {/* Location */}
               <div className="border-t border-deep-sea-blue/10 pt-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-deep-sea-blue/45">
                   Location
@@ -201,11 +249,14 @@ export default function SOSDetailsPage() {
                     size={17}
                     className="mt-0.5 shrink-0 text-deep-sea-blue/50"
                   />
+
                   <div>
                     <p>{request.address || "Address not provided"}</p>
+
                     <p className="mt-1 text-deep-sea-blue/55">
                       District: {request.districtId || "Not provided"}
                     </p>
+
                     <p className="mt-1 text-deep-sea-blue/55">
                       Coordinates: {request.latitude}, {request.longitude}
                     </p>
@@ -213,15 +264,18 @@ export default function SOSDetailsPage() {
                 </div>
               </div>
 
+              {/* Description */}
               <div className="border-t border-deep-sea-blue/10 pt-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-deep-sea-blue/45">
                   Description
                 </p>
+
                 <p className="whitespace-pre-wrap text-sm leading-7">
                   {request.description || "No additional description provided."}
                 </p>
               </div>
 
+              {/* Noted action */}
               {request.status === "PENDING" ? (
                 <button
                   type="button"

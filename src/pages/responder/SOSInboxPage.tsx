@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
   Check,
   LoaderCircle,
+  LogOut,
   Trash2,
 } from "lucide-react";
 
 import { API_BASE_URL } from "../../lib/api";
-import { getResponderSession } from "../../lib/responderAuth";
+import {
+  getResponderSession,
+  clearResponderSession,
+} from "../../lib/responderAuth";
 import { getAdminSession } from "../../lib/adminAuth";
 import type { SOSListResponse, SOSRequest } from "../../types/sos";
-
-function getSession() {
-  return getResponderSession() ?? getAdminSession();
-}
 
 function getEmergencyTitle(type: SOSRequest["emergencyType"]) {
   const titles = {
@@ -35,7 +35,13 @@ function formatDate(date: string) {
   return new Date(date).toLocaleString();
 }
 
-export default function SOSInboxPage() {
+type SOSInboxPageProps = {
+  audience: "admin" | "responder";
+};
+
+export default function SOSInboxPage({ audience }: SOSInboxPageProps) {
+  const navigate = useNavigate();
+
   const [requests, setRequests] = useState<SOSRequest[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -43,10 +49,14 @@ export default function SOSInboxPage() {
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const session = getSession();
-  const token = session?.token;
-  const isAdmin = session?.user?.role === "ADMIN";
+  // Each interface uses its own session.
+  const session =
+    audience === "admin" ? getAdminSession() : getResponderSession();
 
+  const token = session?.token;
+  const isAdmin = audience === "admin";
+
+  // Load SOS requests.
   useEffect(() => {
     const controller = new AbortController();
 
@@ -92,6 +102,7 @@ export default function SOSInboxPage() {
     return () => controller.abort();
   }, [page, token]);
 
+  // Mark an SOS request as noted.
   async function handleNoted(id: string) {
     if (!token) return;
 
@@ -130,6 +141,7 @@ export default function SOSInboxPage() {
     }
   }
 
+  // Delete an SOS request. Admin only.
   async function handleDelete(id: string) {
     if (!token || !isAdmin) return;
 
@@ -161,7 +173,6 @@ export default function SOSInboxPage() {
         setRequests((current) =>
           current.filter((request) => request.id !== id),
         );
-        setTotalPages((current) => Math.max(1, current));
       }
     } catch (err) {
       window.alert(
@@ -172,19 +183,48 @@ export default function SOSInboxPage() {
     }
   }
 
+  // Responder logout.
+  function handleLogout() {
+    clearResponderSession();
+    navigate("/responder/login", { replace: true });
+  }
+
+  const detailsPath =
+    audience === "admin" ? "/admin/responder/sos" : "/responder/sos";
+
   return (
     <main className="min-h-screen bg-mint-cream px-4 py-8 text-deep-sea-blue sm:px-8">
       <div className="mx-auto max-w-3xl">
         <header className="mb-8">
-          <Link
-            to={isAdmin ? "/admin" : "/responder/login"}
-            className="mb-6 inline-flex items-center gap-2 text-sm text-deep-sea-blue/65 transition hover:text-deep-sea-blue"
-          >
-            <ArrowLeft size={16} />
-            {isAdmin ? "Admin dashboard" : "Back"}
-          </Link>
+          <div className="mb-6 flex items-center justify-between gap-4">
+            {isAdmin ? (
+              <Link
+                to="/admin"
+                className="inline-flex items-center gap-2 text-sm text-deep-sea-blue/65 transition hover:text-deep-sea-blue"
+              >
+                <ArrowLeft size={16} />
+                Admin dashboard
+              </Link>
+            ) : (
+              <span className="text-sm font-medium text-deep-sea-blue/65">
+                Responder Dashboard
+              </span>
+            )}
+
+            {!isAdmin && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-2 rounded-xl bg-night-bordeaux px-4 py-2 text-sm font-semibold text-white transition hover:bg-night-bordeaux/90"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            )}
+          </div>
 
           <h1 className="text-3xl font-bold">SOS Inbox</h1>
+
           <p className="mt-2 text-sm text-deep-sea-blue/65">
             Emergency requests received from residents.
           </p>
@@ -200,6 +240,7 @@ export default function SOSInboxPage() {
         <section className="overflow-hidden rounded-2xl border border-deep-sea-blue/10 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-deep-sea-blue/10 px-5 py-4">
             <h2 className="font-semibold">Requests</h2>
+
             <span className="text-sm text-deep-sea-blue/55">
               Page {page} of {totalPages}
             </span>
@@ -213,6 +254,7 @@ export default function SOSInboxPage() {
           ) : requests.length === 0 ? (
             <div className="px-5 py-16 text-center">
               <p className="font-medium">No SOS requests found.</p>
+
               <p className="mt-2 text-sm text-deep-sea-blue/55">
                 New requests will appear here.
               </p>
@@ -229,7 +271,7 @@ export default function SOSInboxPage() {
                     className="flex items-center gap-3 px-4 py-4 transition hover:bg-mint-cream/60 sm:px-5"
                   >
                     <Link
-                      to={`/responder/sos/${request.id}`}
+                      to={`${detailsPath}/${request.id}`}
                       className="min-w-0 flex-1"
                     >
                       <p
@@ -278,6 +320,7 @@ export default function SOSInboxPage() {
                         disabled={isBusy}
                         onClick={() => void handleDelete(request.id)}
                         title="Delete request"
+                        aria-label="Delete SOS request"
                         className="shrink-0 rounded-lg p-2 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
                       >
                         <Trash2 size={17} />
