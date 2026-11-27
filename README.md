@@ -219,7 +219,7 @@ http://localhost:5173
 
 ---
 
-## 🔐 User Roles
+## User Roles
 
 DigiKhizir provides different access levels for different users.
 
@@ -233,7 +233,7 @@ Residents can access the public-facing features without creating an account. Res
 
 ---
 
-## 🌐 Accessibility
+## Accessibility
 
 Accessibility is an important part of DigiKhizir.
 
