@@ -66,7 +66,7 @@ My goal is simple: **make it easier for people to know the danger, find safety, 
 
 ---
 
-## 🛠️ Built With
+## Built With
 
 | Technology      | Purpose                                |
 | --------------- | -------------------------------------- |
