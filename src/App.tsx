@@ -21,7 +21,7 @@ import ProtectedResponderRoute from "./components/responder/ProtectedResponderRo
 import SOSInboxPage from "./pages/responder/SOSInboxPage";
 import SOSDetailsPage from "./pages/responder/SOSDetailsPage";
 
-import { LanguageProvider } from "./context/LanguageContext";
+import { LanguageProvider } from "./context/LanguageContext.tsx";
 
 function ProtectedAdminRoute() {
   const session = getAdminSession();
