@@ -86,6 +86,34 @@ My goal is simple: **make it easier for people to know the danger, find safety, 
 
 ---
 
+## Screenshots
+
+### Home Page
+
+![DigiKhizir Home Page](src/assets/demo/demo-1.png)
+
+### Resident Dashboard
+
+![Resident Dashboard](src/assets/demo/demo-2.png)
+
+### FoodAndRelief
+
+![FoodAndRelief](src/assets/demo/demo-3.png)
+
+### Emergency SOS
+
+![Emergency SOS](src/assets/demo/demo-4.png)
+
+### Responder Dashboard
+
+![Responder Dashboard](src/assets/demo/demo-5.png)
+
+### Admin Dashboard
+
+![Admin Dashboard](src/assets/demo/demo-6.png)
+
+---
+
 ## Project Architecture
 
 DigiKhizir uses a separate frontend and backend architecture.
