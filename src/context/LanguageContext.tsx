@@ -1,16 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-
-type Language = "en" | "bn";
-
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (language: Language) => void;
-  toggleLanguage: () => void;
-}
-
-const LanguageContext = createContext<LanguageContextType | undefined>(
-  undefined,
-);
+import { useState, type ReactNode } from "react";
+import { LanguageContext, type Language } from "./LanguageContext";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
@@ -34,14 +23,4 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       </div>
     </LanguageContext.Provider>
   );
-}
-
-export function useLanguage() {
-  const context = useContext(LanguageContext);
-
-  if (!context) {
-    throw new Error("useLanguage must be used inside LanguageProvider");
-  }
-
-  return context;
 }
