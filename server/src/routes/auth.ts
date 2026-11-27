@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { sign, verify } from "hono/jwt";
+import { sign } from "hono/jwt";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma.js";
 
@@ -92,109 +92,120 @@ authRoute.post("/login", async (c) => {
   }
 });
 
-// PATCH /api/auth/change-password
-authRoute.patch("/change-password", async (c) => {
-  try {
-    const authorization = c.req.header("Authorization");
-    const token = authorization?.startsWith("Bearer ")
-      ? authorization.slice(7)
-      : null;
+// For the producation(PATCH /api/auth/change-password)
+// authRoute.patch("/change-password", async (c) => {
+//   try {
+//     const authorization = c.req.header("Authorization");
+//     const token = authorization?.startsWith("Bearer ")
+//       ? authorization.slice(7)
+//       : null;
 
-    if (!token) {
-      return c.json(
-        { success: false, message: "Authentication required." },
-        401,
-      );
-    }
+//     if (!token) {
+//       return c.json(
+//         { success: false, message: "Authentication required." },
+//         401,
+//       );
+//     }
 
-    const payload = await verify(token, getJwtSecret(), "HS256");
+//     const payload = await verify(token, getJwtSecret(), "HS256");
 
-    if (payload.role !== "ADMIN" || typeof payload.sub !== "string") {
-      return c.json({ success: false, message: "Unauthorized." }, 403);
-    }
+//     if (payload.role !== "ADMIN" || typeof payload.sub !== "string") {
+//       return c.json({ success: false, message: "Unauthorized." }, 403);
+//     }
 
-    const body = await c.req.json<{
-      currentPassword?: string;
-      newPassword?: string;
-    }>();
+//     const body = await c.req.json<{
+//       currentPassword?: string;
+//       newPassword?: string;
+//     }>();
 
-    const { currentPassword, newPassword } = body;
+//     const { currentPassword, newPassword } = body;
 
-    if (!currentPassword || !newPassword) {
-      return c.json(
-        {
-          success: false,
-          message: "Both passwords are required.",
-        },
-        400,
-      );
-    }
+//     if (!currentPassword || !newPassword) {
+//       return c.json(
+//         {
+//           success: false,
+//           message: "Both passwords are required.",
+//         },
+//         400,
+//       );
+//     }
 
-    if (newPassword.length < 8) {
-      return c.json(
-        {
-          success: false,
-          message: "New password must be at least 8 characters.",
-        },
-        400,
-      );
-    }
+//     if (newPassword.length < 8) {
+//       return c.json(
+//         {
+//           success: false,
+//           message: "New password must be at least 8 characters.",
+//         },
+//         400,
+//       );
+//     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-    });
+//     const user = await prisma.user.findUnique({
+//       where: { id: payload.sub },
+//     });
 
-    if (!user || user.role !== "ADMIN") {
-      return c.json(
-        { success: false, message: "Admin account not found." },
-        404,
-      );
-    }
+//     if (!user || user.role !== "ADMIN") {
+//       return c.json(
+//         { success: false, message: "Admin account not found." },
+//         404,
+//       );
+//     }
 
-    const isPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.passwordHash,
-    );
+//     const isPasswordValid = await bcrypt.compare(
+//       currentPassword,
+//       user.passwordHash,
+//     );
 
-    if (!isPasswordValid) {
-      return c.json(
-        { success: false, message: "Current password is incorrect." },
-        400,
-      );
-    }
+//     if (!isPasswordValid) {
+//       return c.json(
+//         { success: false, message: "Current password is incorrect." },
+//         400,
+//       );
+//     }
 
-    if (await bcrypt.compare(newPassword, user.passwordHash)) {
-      return c.json(
-        {
-          success: false,
-          message: "New password must be different from the current password.",
-        },
-        400,
-      );
-    }
+//     if (await bcrypt.compare(newPassword, user.passwordHash)) {
+//       return c.json(
+//         {
+//           success: false,
+//           message: "New password must be different from the current password.",
+//         },
+//         400,
+//       );
+//     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 12);
+//     const passwordHash = await bcrypt.hash(newPassword, 12);
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash },
-    });
+//     await prisma.user.update({
+//       where: { id: user.id },
+//       data: { passwordHash },
+//     });
 
-    return c.json({
-      success: true,
-      message: "Password changed successfully.",
-    });
-  } catch (error) {
-    console.error("Change password error:", error);
+//     return c.json({
+//       success: true,
+//       message: "Password changed successfully.",
+//     });
+//   } catch (error) {
+//     console.error("Change password error:", error);
 
-    return c.json(
-      {
-        success: false,
-        message: "Failed to change password.",
-      },
-      500,
-    );
-  }
+//     return c.json(
+//       {
+//         success: false,
+//         message: "Failed to change password.",
+//       },
+//       500,
+//     );
+//   }
+// });
+
+//For the Hackathon (PATCH /api/auth/change-password)
+authRoute.patch("/change-password", (c) => {
+  return c.json(
+    {
+      success: false,
+      message: "Password changes are currently disabled.",
+    },
+    403,
+  );
 });
 
 export default authRoute;
