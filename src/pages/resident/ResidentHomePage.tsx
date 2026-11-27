@@ -1,10 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+
 import DisasterAlerts from "../../components/resident/alerts/DisasterAlerts";
 import SafeShelters from "../../components/resident/shelters/SafeShelters";
 import FoodRelief from "../../components/resident/food/FoodRelief";
 import AnimalShelters from "../../components/resident/animals/AnimalShelters";
 import ResidentMap from "../../components/resident/map/ResidentMap";
+import LanguageToggle from "../../components/LanguageToggle";
+
+import { useLanguage } from "../../context/useLanguage";
+import {
+  residentHomeTranslations,
+  districtTranslations,
+} from "../../translations/residentHome";
+
 import {
   MapPin,
   Navigation,
@@ -34,36 +43,38 @@ const districts = [
   { id: "gopalganj", name: "Gopalganj" },
   { id: "narail", name: "Narail" },
   { id: "jashore", name: "Jashore" },
-];
+] as const;
 
 const features = [
   {
     id: "alerts",
-    title: "Disaster alerts",
-    description: "Stay updated about active disaster warnings in your area.",
     icon: ShieldAlert,
   },
   {
     id: "shelters",
-    title: "Safe shelters",
-    description: "Find nearby human shelters and their available facilities.",
     icon: Home,
   },
   {
     id: "food",
-    title: "Food & relief",
-    description: "Find food distribution points and essential supplies.",
     icon: Package,
   },
   {
     id: "animals",
-    title: "Animal shelters",
-    description: "Find safe places for livestock and pets.",
     icon: HeartHandshake,
   },
-];
+] as const;
+
+type LocationStatus =
+  | "idle"
+  | "detecting"
+  | "success"
+  | "unsupported"
+  | "denied";
 
 export default function ResidentHomePage() {
+  const { language } = useLanguage();
+  const t = residentHomeTranslations[language];
+
   const [districtId, setDistrictId] = useState("");
 
   const [coordinates, setCoordinates] = useState<{
@@ -71,9 +82,7 @@ export default function ResidentHomePage() {
     longitude: number;
   } | null>(null);
 
-  const [locationStatus, setLocationStatus] = useState(
-    "Your location has not been detected yet.",
-  );
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
 
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
@@ -87,11 +96,11 @@ export default function ResidentHomePage() {
 
   function detectLocation() {
     if (!navigator.geolocation) {
-      setLocationStatus("GPS is not supported by this browser.");
+      setLocationStatus("unsupported");
       return;
     }
 
-    setLocationStatus("Detecting your location...");
+    setLocationStatus("detecting");
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -100,13 +109,11 @@ export default function ResidentHomePage() {
           longitude: position.coords.longitude,
         });
 
-        setLocationStatus("Your GPS location was detected.");
+        setLocationStatus("success");
       },
       () => {
         setCoordinates(null);
-        setLocationStatus(
-          "Location permission was not granted. Please select your district manually.",
-        );
+        setLocationStatus("denied");
       },
       {
         enableHighAccuracy: true,
@@ -116,21 +123,28 @@ export default function ResidentHomePage() {
     );
   }
 
+  const selectedDistrict = districts.find(
+    (district) => district.id === districtId,
+  );
+
   return (
     <main className="min-h-screen bg-mint-cream px-4 py-8 sm:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-10">
-          <p className="font-semibold uppercase tracking-widest text-amethyst">
-            DigiKhizir
-          </p>
+        {/* Header */}
+        <header className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="font-semibold uppercase tracking-widest text-amethyst">
+              DigiKhizir
+            </p>
 
-          <h1 className="mt-2 font-poppins text-3xl font-bold text-deep-sea-blue sm:text-4xl">
-            Your safety dashboard
-          </h1>
+            <h1 className="mt-2 font-poppins text-3xl font-bold text-deep-sea-blue sm:text-4xl">
+              {t.dashboard}
+            </h1>
 
-          <p className="mt-3 text-deep-sea-blue/70">
-            Find safety, stay informed, and get help when you need it.
-          </p>
+            <p className="mt-3 text-deep-sea-blue/70">{t.subtitle}</p>
+          </div>
+
+          <LanguageToggle />
         </header>
 
         {/* Location section */}
@@ -142,11 +156,11 @@ export default function ResidentHomePage() {
 
             <div>
               <h2 className="font-poppins text-xl font-bold text-deep-sea-blue">
-                Your location
+                {t.location}
               </h2>
 
               <p className="text-sm text-deep-sea-blue/60">
-                Choose your district to find relevant services.
+                {t.locationDescription}
               </p>
             </div>
           </div>
@@ -154,7 +168,7 @@ export default function ResidentHomePage() {
           <div className="mt-5 rounded-xl bg-mint-cream p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-deep-sea-blue">
               <Navigation size={17} />
-              {locationStatus}
+              {t.locationStatus[locationStatus]}
             </div>
 
             {coordinates && (
@@ -172,7 +186,7 @@ export default function ResidentHomePage() {
           >
             <span className="inline-flex items-center justify-center gap-2">
               <Navigation size={18} />
-              {coordinates ? "Refresh my location" : "Detect my location"}
+              {coordinates ? t.refreshLocation : t.detectLocation}
             </span>
           </button>
 
@@ -188,7 +202,7 @@ export default function ResidentHomePage() {
             htmlFor="district"
             className="mt-6 block text-sm font-semibold text-deep-sea-blue"
           >
-            Select your district
+            {t.selectDistrict}
           </label>
 
           <select
@@ -197,19 +211,23 @@ export default function ResidentHomePage() {
             onChange={(event) => setDistrictId(event.target.value)}
             className="mt-2 w-full rounded-xl border border-deep-sea-blue/20 bg-white px-4 py-3 text-deep-sea-blue outline-none focus:border-amethyst focus:ring-2 focus:ring-amethyst/20"
           >
-            <option value="">Choose your district</option>
+            <option value="">{t.chooseDistrict}</option>
 
             {districts.map((district) => (
               <option key={district.id} value={district.id}>
-                {district.name}
+                {language === "bn"
+                  ? districtTranslations[district.id]
+                  : district.name}
               </option>
             ))}
           </select>
 
-          {districtId && (
+          {selectedDistrict && (
             <p className="mt-3 text-sm font-medium text-deep-sea-blue">
-              Selected district:{" "}
-              {districts.find((district) => district.id === districtId)?.name}
+              {t.selectedDistrict}{" "}
+              {language === "bn"
+                ? districtTranslations[selectedDistrict.id]
+                : selectedDistrict.name}
             </p>
           )}
         </section>
@@ -218,11 +236,11 @@ export default function ResidentHomePage() {
         <section className="mt-8">
           <div className="mb-4">
             <h2 className="font-poppins text-xl font-bold text-deep-sea-blue">
-              What are you looking for?
+              {t.servicesHeading}
             </h2>
 
             <p className="mt-1 text-sm text-deep-sea-blue/60">
-              Select one or more services you want to explore.
+              {t.servicesDescription}
             </p>
           </div>
 
@@ -230,6 +248,7 @@ export default function ResidentHomePage() {
             {features.map((feature) => {
               const Icon = feature.icon;
               const isSelected = selectedFeatures.includes(feature.id);
+              const featureText = t.features[feature.id];
 
               return (
                 <button
@@ -263,11 +282,11 @@ export default function ResidentHomePage() {
                   </div>
 
                   <h3 className="mt-4 font-poppins text-xl font-bold text-deep-sea-blue">
-                    {feature.title}
+                    {featureText.title}
                   </h3>
 
                   <p className="mt-2 text-sm text-deep-sea-blue/70">
-                    {feature.description}
+                    {featureText.description}
                   </p>
                 </button>
               );
@@ -276,45 +295,54 @@ export default function ResidentHomePage() {
 
           <p className="mt-4 text-sm text-deep-sea-blue/60">
             {selectedFeatures.length === 0
-              ? "No services selected yet."
-              : `${selectedFeatures.length} service${
-                  selectedFeatures.length > 1 ? "s" : ""
-                } selected.`}
+              ? t.noServices
+              : `${selectedFeatures.length} ${
+                  language === "bn"
+                    ? t.serviceSelected
+                    : selectedFeatures.length > 1
+                      ? t.servicesSelected
+                      : t.serviceSelected
+                }`}
           </p>
         </section>
 
+        {/* Disaster alerts */}
         {selectedFeatures.includes("alerts") &&
           (districtId ? (
             <DisasterAlerts key={districtId} districtId={districtId} />
           ) : (
             <div className="mt-6 rounded-xl bg-white p-5 text-center text-sm text-deep-sea-blue/70">
-              Please select your district to view disaster alerts.
+              {t.prompts.alerts}
             </div>
           ))}
 
+        {/* Safe shelters */}
         {selectedFeatures.includes("shelters") &&
           (districtId ? (
             <SafeShelters districtId={districtId} coordinates={coordinates} />
           ) : (
             <div className="mt-6 rounded-xl bg-white p-5 text-center text-sm text-deep-sea-blue/70">
-              Please select your district to find safe shelters.
+              {t.prompts.shelters}
             </div>
           ))}
 
+        {/* Food and relief */}
         {selectedFeatures.includes("food") &&
           (districtId ? (
             <FoodRelief key={districtId} districtId={districtId} />
           ) : (
             <div className="mt-6 rounded-xl bg-white p-5 text-center text-sm text-deep-sea-blue/70">
-              Please select your district to view food and relief locations.
+              {t.prompts.food}
             </div>
           ))}
+
+        {/* Animal shelters */}
         {selectedFeatures.includes("animals") &&
           (districtId ? (
             <AnimalShelters key={districtId} districtId={districtId} />
           ) : (
             <div className="mt-6 rounded-xl bg-white p-5 text-center text-sm text-deep-sea-blue/70">
-              Please select your district to find animal shelters.
+              {t.prompts.animals}
             </div>
           ))}
 
@@ -323,12 +351,11 @@ export default function ResidentHomePage() {
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
             <div>
               <h2 className="font-poppins text-2xl font-bold">
-                Need emergency help?
+                {t.emergencyHeading}
               </h2>
 
               <p className="mt-2 text-sm text-white/75">
-                Send your location and emergency request without creating an
-                account.
+                {t.emergencyDescription}
               </p>
             </div>
 
@@ -336,7 +363,7 @@ export default function ResidentHomePage() {
               to="/sos"
               className="inline-flex shrink-0 items-center justify-center rounded-xl bg-cotton-candy px-6 py-3 font-bold text-night-bordeaux transition hover:brightness-105"
             >
-              Send SOS
+              {t.sendSOS}
             </Link>
           </div>
         </section>
