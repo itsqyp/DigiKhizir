@@ -21,6 +21,8 @@ import ProtectedResponderRoute from "./components/responder/ProtectedResponderRo
 import SOSInboxPage from "./pages/responder/SOSInboxPage";
 import SOSDetailsPage from "./pages/responder/SOSDetailsPage";
 
+import { LanguageProvider } from "./context/LanguageContext";
+
 function ProtectedAdminRoute() {
   const session = getAdminSession();
 
@@ -35,9 +37,30 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/resident" element={<ResidentHomePage />} />
-        <Route path="/sos" element={<SOSPage />} />
+        <Route
+          path="/"
+          element={
+            <LanguageProvider>
+              <HomePage />
+            </LanguageProvider>
+          }
+        />
+        <Route
+          path="/resident"
+          element={
+            <LanguageProvider>
+              <ResidentHomePage />
+            </LanguageProvider>
+          }
+        />
+        <Route
+          path="/sos"
+          element={
+            <LanguageProvider>
+              <SOSPage />
+            </LanguageProvider>
+          }
+        />
 
         {/* Admin login */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
