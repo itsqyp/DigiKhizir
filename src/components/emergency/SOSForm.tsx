@@ -1,48 +1,58 @@
 import { useState } from "react";
 import { API_BASE_URL } from "../../lib/api";
+import { useLanguage } from "../../context/useLanguage";
+import { sosFormTranslations } from "../../translations/sosForm";
 
 const emergencyTypes = [
-  { value: "FLOOD_TRAPPED", label: "Trapped in flood", icon: "🌊" },
-  { value: "RESCUE", label: "Need rescue", icon: "🆘" },
-  { value: "MEDICAL", label: "Medical emergency", icon: "🚑" },
-  { value: "FOOD_WATER", label: "Need food or water", icon: "🍚" },
-  { value: "ANIMAL_RESCUE", label: "Animal rescue", icon: "🐄" },
-  { value: "OTHER", label: "Other emergency", icon: "⚠️" },
+  { value: "FLOOD_TRAPPED", icon: "🌊" },
+  { value: "RESCUE", icon: "🆘" },
+  { value: "MEDICAL", icon: "🚑" },
+  { value: "FOOD_WATER", icon: "🍚" },
+  { value: "ANIMAL_RESCUE", icon: "🐄" },
+  { value: "OTHER", icon: "⚠️" },
 ] as const;
 
 const districts = [
-  { id: "bhola", name: "Bhola" },
-  { id: "patuakhali", name: "Patuakhali" },
-  { id: "barguna", name: "Barguna" },
-  { id: "noakhali", name: "Noakhali" },
-  { id: "lakshmipur", name: "Lakshmipur" },
-  { id: "satkhira", name: "Satkhira" },
-  { id: "khulna", name: "Khulna" },
-  { id: "bagerhat", name: "Bagerhat" },
-  { id: "coxsbazar", name: "Cox's Bazar" },
-  { id: "chattogram", name: "Chattogram" },
-  { id: "feni", name: "Feni" },
-  { id: "barishal", name: "Barishal" },
-  { id: "pirojpur", name: "Pirojpur" },
-  { id: "jhalokati", name: "Jhalokati" },
-  { id: "chandpur", name: "Chandpur" },
-  { id: "shariatpur", name: "Shariatpur" },
-  { id: "gopalganj", name: "Gopalganj" },
-  { id: "narail", name: "Narail" },
-  { id: "jashore", name: "Jashore" },
-];
+  "bhola",
+  "patuakhali",
+  "barguna",
+  "noakhali",
+  "lakshmipur",
+  "satkhira",
+  "khulna",
+  "bagerhat",
+  "coxsbazar",
+  "chattogram",
+  "feni",
+  "barishal",
+  "pirojpur",
+  "jhalokati",
+  "chandpur",
+  "shariatpur",
+  "gopalganj",
+  "narail",
+  "jashore",
+] as const;
 
 type EmergencyType = (typeof emergencyTypes)[number]["value"];
 
+type LocationStatus =
+  | "idle"
+  | "detecting"
+  | "unsupported"
+  | "detected"
+  | "denied";
+
 export default function SOSForm() {
+  const { language } = useLanguage();
+  const t = sosFormTranslations[language];
+
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
 
-  const [locationStatus, setLocationStatus] = useState(
-    "Location has not been detected.",
-  );
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
 
   const [emergencyType, setEmergencyType] = useState<EmergencyType | "">("");
   const [districtId, setDistrictId] = useState("");
@@ -55,12 +65,20 @@ export default function SOSForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const locationMessages: Record<LocationStatus, string> = {
+    idle: t.locationNotDetected,
+    detecting: t.detecting,
+    unsupported: t.unsupported,
+    detected: t.detected,
+    denied: t.denied,
+  };
+
   function detectLocation() {
     setError("");
-    setLocationStatus("Detecting your location...");
+    setLocationStatus("detecting");
 
     if (!navigator.geolocation) {
-      setLocationStatus("Location is not supported by this browser.");
+      setLocationStatus("unsupported");
       return;
     }
 
@@ -70,13 +88,12 @@ export default function SOSForm() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
-        setLocationStatus("Your location has been detected.");
+
+        setLocationStatus("detected");
       },
       () => {
         setLocation(null);
-        setLocationStatus(
-          "Unable to access your location. Please allow location permission.",
-        );
+        setLocationStatus("denied");
       },
       {
         enableHighAccuracy: true,
@@ -92,12 +109,12 @@ export default function SOSForm() {
     setSuccess("");
 
     if (!location) {
-      setError("Please detect your location before submitting an SOS.");
+      setError(t.locationRequired);
       return;
     }
 
     if (!emergencyType) {
-      setError("Please select an emergency type.");
+      setError(t.emergencyRequired);
       return;
     }
 
@@ -124,12 +141,10 @@ export default function SOSForm() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to submit your SOS.");
+        throw new Error(data.message || t.submitError);
       }
 
-      setSuccess(
-        `Your emergency request was received. Reference ID: ${data.data.id}`,
-      );
+      setSuccess(`${t.success} ${data.data.id}`);
 
       setEmergencyType("");
       setDistrictId("");
@@ -138,11 +153,7 @@ export default function SOSForm() {
       setPhone("");
       setDescription("");
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again.",
-      );
+      setError(err instanceof Error ? err.message : t.genericError);
     } finally {
       setLoading(false);
     }
@@ -155,50 +166,58 @@ export default function SOSForm() {
     <section className="mx-auto w-full max-w-xl rounded-3xl border border-deep-sea-blue/10 bg-mint-cream p-6 shadow-xl shadow-deep-sea-blue/10 sm:p-8">
       <div className="mb-7">
         <span className="inline-block rounded-full bg-cotton-candy/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-night-bordeaux">
-          Emergency assistance
+          {t.badge}
         </span>
 
         <h1 className="mt-3 font-poppins text-3xl font-bold text-deep-sea-blue">
-          Emergency SOS
+          {t.title}
         </h1>
 
         <p className="mt-2 text-sm leading-relaxed text-deep-sea-blue/70">
-          Send an emergency request to the response team. You do not need an
-          account.
+          {t.intro}
         </p>
       </div>
 
+      {/* Location */}
       <div className="mb-7 rounded-2xl border border-deep-sea-blue/10 bg-white p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-poppins font-semibold text-deep-sea-blue">
-            Your location
+            {t.locationTitle}
           </h2>
           <span className="text-xl">📍</span>
         </div>
 
-        <p className="mt-2 text-sm text-deep-sea-blue/60">{locationStatus}</p>
+        <p className="mt-2 text-sm text-deep-sea-blue/60" role="status">
+          {locationMessages[locationStatus]}
+        </p>
 
         {location && (
           <p className="mt-3 rounded-lg bg-mint-cream p-3 text-xs text-deep-sea-blue/70">
-            Latitude: {location.latitude.toFixed(6)}
+            {t.latitude}: {location.latitude.toFixed(6)}
             <br />
-            Longitude: {location.longitude.toFixed(6)}
+            {t.longitude}: {location.longitude.toFixed(6)}
           </p>
         )}
 
         <button
           type="button"
           onClick={detectLocation}
-          className="mt-4 w-full rounded-xl bg-deep-sea-blue px-4 py-3 font-semibold text-white transition hover:bg-deep-sea-blue/90"
+          disabled={locationStatus === "detecting"}
+          className="mt-4 w-full rounded-xl bg-deep-sea-blue px-4 py-3 font-semibold text-white transition hover:bg-deep-sea-blue/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {location ? "Refresh my location" : "Detect my location"}
+          {locationStatus === "detecting"
+            ? t.detecting
+            : location
+              ? t.refreshButton
+              : t.detectButton}
         </button>
       </div>
 
       <form onSubmit={submitSOS} className="space-y-6">
+        {/* Emergency type */}
         <div>
           <label className="mb-3 block font-poppins font-semibold text-deep-sea-blue">
-            What happened?
+            {t.emergencyQuestion}
           </label>
 
           <div className="grid grid-cols-2 gap-3">
@@ -216,7 +235,7 @@ export default function SOSForm() {
               >
                 <span className="block text-2xl">{type.icon}</span>
                 <span className="mt-2 block text-sm font-semibold text-deep-sea-blue">
-                  {type.label}
+                  {t.emergencyTypes[type.value]}
                 </span>
               </button>
             ))}
@@ -229,7 +248,7 @@ export default function SOSForm() {
             htmlFor="sos-district"
             className="mb-2 block text-sm font-semibold text-deep-sea-blue"
           >
-            Your district (optional)
+            {t.districtLabel}
           </label>
 
           <select
@@ -238,11 +257,11 @@ export default function SOSForm() {
             onChange={(e) => setDistrictId(e.target.value)}
             className={inputClasses}
           >
-            <option value="">Select your district</option>
+            <option value="">{t.selectDistrict}</option>
 
-            {districts.map((district) => (
-              <option key={district.id} value={district.id}>
-                {district.name}
+            {districts.map((id) => (
+              <option key={id} value={id}>
+                {t.districts[id]}
               </option>
             ))}
           </select>
@@ -254,7 +273,7 @@ export default function SOSForm() {
             htmlFor="sos-address"
             className="mb-2 block text-sm font-semibold text-deep-sea-blue"
           >
-            Your address / current location (optional)
+            {t.addressLabel}
           </label>
 
           <textarea
@@ -264,54 +283,70 @@ export default function SOSForm() {
             maxLength={300}
             rows={2}
             className={`${inputClasses} resize-none`}
-            placeholder="Enter your village, road, union, or nearby landmark"
+            placeholder={t.addressPlaceholder}
           />
         </div>
 
+        {/* Name */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-deep-sea-blue">
-            Your name (optional)
+          <label
+            htmlFor="sos-name"
+            className="mb-2 block text-sm font-semibold text-deep-sea-blue"
+          >
+            {t.nameLabel}
           </label>
 
           <input
+            id="sos-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={100}
             className={inputClasses}
-            placeholder="Enter your name"
+            placeholder={t.namePlaceholder}
           />
         </div>
 
+        {/* Phone */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-deep-sea-blue">
-            Phone number (optional)
+          <label
+            htmlFor="sos-phone"
+            className="mb-2 block text-sm font-semibold text-deep-sea-blue"
+          >
+            {t.phoneLabel}
           </label>
 
           <input
+            id="sos-phone"
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             maxLength={30}
             className={inputClasses}
-            placeholder="Enter your phone number"
+            placeholder={t.phonePlaceholder}
           />
         </div>
 
+        {/* Additional details */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-deep-sea-blue">
-            Additional details (optional)
+          <label
+            htmlFor="sos-description"
+            className="mb-2 block text-sm font-semibold text-deep-sea-blue"
+          >
+            {t.detailsLabel}
           </label>
 
           <textarea
+            id="sos-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             maxLength={1000}
             rows={4}
             className={`${inputClasses} resize-none`}
-            placeholder="Describe your emergency..."
+            placeholder={t.detailsPlaceholder}
           />
         </div>
 
+        {/* Error */}
         {error && (
           <p
             role="alert"
@@ -321,6 +356,7 @@ export default function SOSForm() {
           </p>
         )}
 
+        {/* Success */}
         {success && (
           <p
             role="status"
@@ -330,17 +366,17 @@ export default function SOSForm() {
           </p>
         )}
 
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
           className="w-full rounded-xl bg-night-bordeaux px-4 py-4 font-poppins text-lg font-bold text-white shadow-lg shadow-night-bordeaux/20 transition hover:bg-night-bordeaux/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Sending emergency request..." : "SEND SOS"}
+          {loading ? t.sending : t.sendButton}
         </button>
 
         <p className="text-center text-xs leading-relaxed text-deep-sea-blue/60">
-          Your request is sent to the server. This does not automatically mean
-          that rescue has been dispatched.
+          {t.disclaimer}
         </p>
       </form>
     </section>
