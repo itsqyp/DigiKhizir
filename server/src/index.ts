@@ -16,10 +16,17 @@ import adminAlertsRoute from "./routes/admin/alerts.js";
 import { cors } from "hono/cors";
 const app = new Hono();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+].filter((origin): origin is string => Boolean(origin));
+
 app.use(
   "*",
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin) => {
+      return allowedOrigins.includes(origin) ? origin : "";
+    },
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,
